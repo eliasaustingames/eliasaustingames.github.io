@@ -1,0 +1,1465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ELIAS AUSTIN GAMES</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=Syncopate:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --black: #0a0a0a;
+            --black-light: #111111;
+            --black-lighter: #1a1a1a;
+            --cyan: #00f0ff;
+            --cyan-dark: #00a8b3;
+            --cyan-glow: rgba(0, 240, 255, 0.5);
+            --white: #e0e0e0;
+        }
+
+        body {
+            background-color: var(--black);
+            color: var(--white);
+            font-family: 'Share Tech Mono', monospace;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Scanline overlay */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 2px,
+                rgba(0, 0, 0, 0.15) 2px,
+                rgba(0, 0, 0, 0.15) 4px
+            );
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        /* Distorted grid background */
+        .grid-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(0, 240, 255, 0.015) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 240, 255, 0.015) 1px, transparent 1px),
+                radial-gradient(ellipse at 0% 50%, rgba(0, 240, 255, 0.02) 0%, transparent 50%),
+                radial-gradient(ellipse at 100% 50%, rgba(0, 240, 255, 0.02) 0%, transparent 50%);
+            background-size: 80px 80px, 80px 80px, 100% 100%, 100% 100%;
+            pointer-events: none;
+            z-index: -1;
+            filter: blur(0.3px);
+            animation: grid-shift 20s ease-in-out infinite;
+        }
+
+        @keyframes grid-shift {
+            0%, 100% { 
+                background-position: 0 0, 0 0, 0% 50%, 100% 50%;
+            }
+            50% { 
+                background-position: 40px 40px, 40px 40px, 5% 50%, 95% 50%;
+            }
+        }
+
+        /* Biomechanical noise texture overlay */
+        .noise-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.03;
+            pointer-events: none;
+            z-index: 1;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+            animation: noise-shift 0.5s steps(5) infinite;
+        }
+
+        @keyframes noise-shift {
+            0% { transform: translate(0, 0); }
+            20% { transform: translate(-2px, 2px); }
+            40% { transform: translate(2px, -2px); }
+            60% { transform: translate(-1px, -1px); }
+            80% { transform: translate(1px, 1px); }
+            100% { transform: translate(0, 0); }
+        }
+
+        /* Giger-inspired biomechanical structures */
+        .bio-structure {
+            position: fixed;
+            pointer-events: none;
+            z-index: -1;
+            opacity: 0.08;
+        }
+
+        /* Spine/ribcage structure - left side */
+        .spine-left {
+            left: -50px;
+            top: 10%;
+            height: 80%;
+            width: 200px;
+        }
+
+        .spine-left::before {
+            content: '';
+            position: absolute;
+            width: 4px;
+            height: 100%;
+            left: 80px;
+            background: linear-gradient(180deg, 
+                transparent 0%, 
+                var(--cyan) 10%, 
+                var(--cyan) 90%, 
+                transparent 100%);
+            box-shadow: 0 0 20px var(--cyan);
+            animation: spine-pulse 4s ease-in-out infinite;
+        }
+
+        @keyframes spine-pulse {
+            0%, 100% { opacity: 0.08; box-shadow: 0 0 10px var(--cyan); }
+            50% { opacity: 0.15; box-shadow: 0 0 25px var(--cyan); }
+        }
+
+        .rib {
+            position: absolute;
+            left: 20px;
+            width: 80px;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--cyan));
+            transform-origin: right center;
+            animation: rib-breathe 6s ease-in-out infinite;
+        }
+
+        .rib::after {
+            content: '';
+            position: absolute;
+            right: -8px;
+            top: -4px;
+            width: 10px;
+            height: 10px;
+            border: 1px solid var(--cyan);
+            border-radius: 50%;
+            background: var(--black);
+            animation: node-pulse 3s ease-in-out infinite;
+        }
+
+        @keyframes rib-breathe {
+            0%, 100% { transform: rotate(var(--rib-angle)) scaleX(1); }
+            50% { transform: rotate(var(--rib-angle)) scaleX(1.1); }
+        }
+
+        @keyframes node-pulse {
+            0%, 100% { box-shadow: 0 0 0 var(--cyan); }
+            50% { box-shadow: 0 0 8px var(--cyan); }
+        }
+
+        .spine-left .rib:nth-child(1) { top: 5%; --rib-angle: -15deg; animation-delay: 0s; }
+        .spine-left .rib:nth-child(2) { top: 12%; --rib-angle: -12deg; animation-delay: 0.2s; }
+        .spine-left .rib:nth-child(3) { top: 19%; --rib-angle: -8deg; animation-delay: 0.4s; }
+        .spine-left .rib:nth-child(4) { top: 26%; --rib-angle: -4deg; animation-delay: 0.6s; }
+        .spine-left .rib:nth-child(5) { top: 33%; --rib-angle: 0deg; animation-delay: 0.8s; }
+        .spine-left .rib:nth-child(6) { top: 40%; --rib-angle: 4deg; animation-delay: 1s; }
+        .spine-left .rib:nth-child(7) { top: 47%; --rib-angle: 8deg; animation-delay: 1.2s; }
+        .spine-left .rib:nth-child(8) { top: 54%; --rib-angle: 12deg; animation-delay: 1.4s; }
+        .spine-left .rib:nth-child(9) { top: 61%; --rib-angle: 15deg; animation-delay: 1.6s; }
+        .spine-left .rib:nth-child(10) { top: 68%; --rib-angle: 12deg; animation-delay: 1.8s; }
+        .spine-left .rib:nth-child(11) { top: 75%; --rib-angle: 8deg; animation-delay: 2s; }
+        .spine-left .rib:nth-child(12) { top: 82%; --rib-angle: 4deg; animation-delay: 2.2s; }
+        .spine-left .rib:nth-child(13) { top: 89%; --rib-angle: 0deg; animation-delay: 2.4s; }
+
+        /* Tendril/tube structures - right side */
+        .tendril-cluster {
+            right: 0;
+            top: 0;
+            width: 300px;
+            height: 100%;
+        }
+
+        .tendril {
+            position: absolute;
+            right: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .tendril::before {
+            content: '';
+            position: absolute;
+            width: 3px;
+            background: linear-gradient(180deg,
+                transparent 0%,
+                var(--cyan) 20%,
+                var(--cyan-dark) 50%,
+                var(--cyan) 80%,
+                transparent 100%);
+            animation: tendril-flow 8s ease-in-out infinite;
+        }
+
+        @keyframes tendril-flow {
+            0%, 100% { 
+                opacity: 0.08;
+                transform: scaleY(1) translateX(0);
+            }
+            25% {
+                opacity: 0.12;
+                transform: scaleY(1.02) translateX(-2px);
+            }
+            50% { 
+                opacity: 0.15;
+                transform: scaleY(1.05) translateX(0);
+            }
+            75% {
+                opacity: 0.12;
+                transform: scaleY(1.02) translateX(2px);
+            }
+        }
+
+        .tendril:nth-child(1)::before {
+            right: 20px;
+            top: 5%;
+            height: 60%;
+            animation-delay: 0s;
+        }
+
+        .tendril:nth-child(2)::before {
+            right: 45px;
+            top: 15%;
+            height: 70%;
+            opacity: 0.7;
+            animation-delay: 1s;
+        }
+
+        .tendril:nth-child(3)::before {
+            right: 70px;
+            top: 25%;
+            height: 50%;
+            opacity: 0.5;
+            animation-delay: 2s;
+        }
+
+        .tendril:nth-child(4)::before {
+            right: 100px;
+            top: 10%;
+            height: 40%;
+            opacity: 0.3;
+            animation-delay: 3s;
+        }
+
+        /* Organic membrane/web pattern */
+        .membrane {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            z-index: -1;
+            opacity: 0.04;
+            background: 
+                radial-gradient(ellipse 600px 200px at 0% 30%, var(--cyan) 0%, transparent 50%),
+                radial-gradient(ellipse 400px 600px at 100% 70%, var(--cyan) 0%, transparent 40%),
+                radial-gradient(ellipse 300px 100px at 20% 80%, var(--cyan) 0%, transparent 50%),
+                radial-gradient(ellipse 200px 400px at 90% 20%, var(--cyan) 0%, transparent 40%);
+            animation: membrane-drift 20s ease-in-out infinite;
+        }
+
+        @keyframes membrane-drift {
+            0%, 100% { 
+                background-position: 0% 0%, 100% 100%, 20% 80%, 90% 20%;
+                opacity: 0.03;
+            }
+            25% {
+                background-position: 5% 10%, 95% 90%, 25% 75%, 85% 25%;
+                opacity: 0.05;
+            }
+            50% { 
+                background-position: 0% 5%, 100% 95%, 15% 85%, 95% 15%;
+                opacity: 0.04;
+            }
+            75% {
+                background-position: -5% -5%, 105% 105%, 20% 85%, 90% 20%;
+                opacity: 0.05;
+            }
+        }
+
+        /* Harsh angular cuts */
+        .harsh-cut {
+            position: fixed;
+            background: linear-gradient(90deg, var(--cyan), transparent);
+            height: 1px;
+            pointer-events: none;
+            z-index: -1;
+            opacity: 0.15;
+            animation: cut-scan 6s ease-in-out infinite;
+        }
+
+        @keyframes cut-scan {
+            0%, 100% { 
+                opacity: 0.1;
+                transform: scaleX(1);
+            }
+            50% { 
+                opacity: 0.25;
+                transform: scaleX(1.1);
+            }
+        }
+
+        .harsh-cut:nth-child(1) { width: 30%; top: 15%; left: 0; animation-delay: 0s; }
+        .harsh-cut:nth-child(2) { width: 20%; top: 35%; right: 0; left: auto; background: linear-gradient(-90deg, var(--cyan), transparent); animation-delay: 1s; }
+        .harsh-cut:nth-child(3) { width: 40%; top: 55%; left: 0; animation-delay: 2s; }
+        .harsh-cut:nth-child(4) { width: 25%; top: 75%; right: 0; left: auto; background: linear-gradient(-90deg, var(--cyan), transparent); animation-delay: 3s; }
+        .harsh-cut:nth-child(5) { width: 15%; top: 90%; left: 0; animation-delay: 4s; }
+
+        /* Vertebrae nodes */
+        .vertebrae {
+            position: fixed;
+            right: 40px;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
+            z-index: -1;
+            opacity: 0.1;
+        }
+
+        .vertebra {
+            width: 20px;
+            height: 8px;
+            margin: 15px 0;
+            position: relative;
+            animation: vertebra-shift 4s ease-in-out infinite;
+        }
+
+        @keyframes vertebra-shift {
+            0%, 100% { transform: translateX(0); }
+            50% { transform: translateX(-3px); }
+        }
+
+        .vertebra:nth-child(odd) {
+            animation-direction: reverse;
+        }
+
+        .vertebra::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 2px;
+            top: 50%;
+            background: var(--cyan);
+            box-shadow: 0 0 10px var(--cyan);
+            animation: vertebra-glow 3s ease-in-out infinite;
+        }
+
+        @keyframes vertebra-glow {
+            0%, 100% { box-shadow: 0 0 5px var(--cyan); }
+            50% { box-shadow: 0 0 15px var(--cyan); }
+        }
+
+        .vertebra::after {
+            content: '';
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%) rotate(45deg);
+            border: 1px solid var(--cyan);
+            background: var(--black);
+            animation: vertebra-spin 8s linear infinite;
+        }
+
+        @keyframes vertebra-spin {
+            0% { transform: translate(-50%, -50%) rotate(45deg); }
+            100% { transform: translate(-50%, -50%) rotate(405deg); }
+        }
+
+        .vertebra:nth-child(1) { animation-delay: 0s; }
+        .vertebra:nth-child(2) { animation-delay: 0.2s; }
+        .vertebra:nth-child(3) { animation-delay: 0.4s; }
+        .vertebra:nth-child(4) { animation-delay: 0.6s; }
+        .vertebra:nth-child(5) { animation-delay: 0.8s; }
+        .vertebra:nth-child(6) { animation-delay: 1s; }
+        .vertebra:nth-child(7) { animation-delay: 1.2s; }
+        .vertebra:nth-child(8) { animation-delay: 1.4s; }
+        .vertebra:nth-child(9) { animation-delay: 1.6s; }
+        .vertebra:nth-child(10) { animation-delay: 1.8s; }
+
+        /* Pulsing organic nodes */
+        .organic-node {
+            position: fixed;
+            width: 4px;
+            height: 4px;
+            background: var(--cyan);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: -1;
+            opacity: 0.3;
+            animation: pulse 3s ease-in-out infinite, node-drift 15s ease-in-out infinite;
+        }
+
+        .organic-node::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 20px;
+            height: 20px;
+            border: 1px solid var(--cyan);
+            border-radius: 50%;
+            opacity: 0.3;
+            animation: ring-expand 4s ease-out infinite;
+        }
+
+        @keyframes ring-expand {
+            0% { transform: translate(-50%, -50%) scale(1); opacity: 0.3; }
+            100% { transform: translate(-50%, -50%) scale(2); opacity: 0; }
+        }
+
+        .organic-node:nth-child(1) { left: 15%; top: 20%; animation-delay: 0s, 0s; }
+        .organic-node:nth-child(2) { left: 85%; top: 40%; animation-delay: 1s, 3s; }
+        .organic-node:nth-child(3) { left: 10%; top: 60%; animation-delay: 2s, 6s; }
+        .organic-node:nth-child(4) { left: 75%; top: 85%; animation-delay: 0.5s, 9s; }
+        .organic-node:nth-child(5) { left: 50%; top: 10%; animation-delay: 1.5s, 12s; }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(1.5); }
+        }
+
+        @keyframes node-drift {
+            0%, 100% { transform: translate(0, 0); }
+            25% { transform: translate(10px, -15px); }
+            50% { transform: translate(-5px, 10px); }
+            75% { transform: translate(-15px, -5px); }
+        }
+
+        /* Distorted mesh lines */
+        .mesh-distort {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+            opacity: 0.02;
+            background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 50 Q25 30 50 50 T100 50' stroke='%2300f0ff' fill='none' stroke-width='0.5'/%3E%3Cpath d='M0 30 Q25 50 50 30 T100 30' stroke='%2300f0ff' fill='none' stroke-width='0.5'/%3E%3Cpath d='M0 70 Q25 50 50 70 T100 70' stroke='%2300f0ff' fill='none' stroke-width='0.5'/%3E%3C/svg%3E");
+            background-size: 200px 100px;
+            animation: mesh-scroll 30s linear infinite;
+        }
+
+        @keyframes mesh-scroll {
+            0% { background-position: 0 0; }
+            100% { background-position: 200px 100px; }
+        }
+
+        /* Header */
+        header {
+            padding: 60px 20px;
+            text-align: center;
+            position: relative;
+            border-bottom: 1px solid var(--black-lighter);
+            z-index: 1;
+            background: var(--black);
+        }
+
+        .logo-container {
+            position: relative;
+            display: inline-block;
+            padding: 40px;
+        }
+
+        /* Neural network background for logo */
+        .logo-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 30%, var(--cyan) 1px, transparent 1px),
+                radial-gradient(circle at 80% 20%, var(--cyan) 1px, transparent 1px),
+                radial-gradient(circle at 10% 70%, var(--cyan) 1px, transparent 1px),
+                radial-gradient(circle at 90% 80%, var(--cyan) 1px, transparent 1px),
+                radial-gradient(circle at 50% 10%, var(--cyan) 1px, transparent 1px),
+                radial-gradient(circle at 30% 90%, var(--cyan) 1px, transparent 1px),
+                radial-gradient(circle at 70% 60%, var(--cyan) 1px, transparent 1px),
+                radial-gradient(circle at 40% 40%, var(--cyan) 1px, transparent 1px),
+                radial-gradient(circle at 60% 85%, var(--cyan) 1px, transparent 1px);
+            background-size: 100% 100%;
+            opacity: 0.3;
+            animation: neural-pulse 4s ease-in-out infinite;
+        }
+
+        @keyframes neural-pulse {
+            0%, 100% { opacity: 0.2; filter: blur(0px); }
+            50% { opacity: 0.5; filter: blur(1px); }
+        }
+
+        /* Neural connection lines */
+        .neural-web {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            opacity: 0.15;
+        }
+
+        .neural-web svg {
+            width: 100%;
+            height: 100%;
+            overflow: visible;
+        }
+
+        .neural-line {
+            stroke: var(--cyan);
+            stroke-width: 0.5;
+            fill: none;
+            animation: line-pulse 3s ease-in-out infinite;
+            transition: d 0.5s ease-in-out;
+        }
+
+        .neural-line:nth-child(1) { animation-delay: 0s; }
+        .neural-line:nth-child(2) { animation-delay: 0.5s; }
+        .neural-line:nth-child(3) { animation-delay: 1s; }
+        .neural-line:nth-child(4) { animation-delay: 1.5s; }
+        .neural-line:nth-child(5) { animation-delay: 2s; }
+
+        @keyframes line-pulse {
+            0%, 100% { opacity: 0.3; stroke-width: 0.5; }
+            50% { opacity: 1; stroke-width: 1; }
+        }
+
+        h1 {
+            font-family: 'Syncopate', sans-serif;
+            font-size: clamp(1.5rem, 6vw, 3.5rem);
+            font-weight: 700;
+            letter-spacing: 0.3em;
+            color: transparent;
+            background: linear-gradient(
+                90deg,
+                var(--cyan) 0%,
+                var(--white) 25%,
+                var(--cyan) 50%,
+                var(--white) 75%,
+                var(--cyan) 100%
+            );
+            background-size: 200% 100%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            position: relative;
+            animation: brain-flow 8s linear infinite;
+            text-transform: uppercase;
+        }
+
+        @keyframes brain-flow {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 200% 50%; }
+        }
+
+        h1::before {
+            content: 'ELIAS AUSTIN GAMES';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            color: var(--cyan);
+            opacity: 0.5;
+            filter: blur(8px);
+            animation: brain-breathe 4s ease-in-out infinite;
+        }
+
+        h1::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 120%;
+            height: 200%;
+            background: radial-gradient(ellipse, var(--cyan-glow) 0%, transparent 50%);
+            opacity: 0.3;
+            filter: blur(20px);
+            animation: brain-breathe 4s ease-in-out infinite reverse;
+            z-index: -1;
+        }
+
+        @keyframes brain-breathe {
+            0%, 100% { opacity: 0.3; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(1.05); }
+        }
+
+        /* Matrix-style character elements - spawned dynamically */
+        .matrix-char {
+            position: fixed;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 14px;
+            color: var(--cyan);
+            pointer-events: none;
+            text-shadow: 0 0 8px var(--cyan);
+            z-index: -1;
+            opacity: 0;
+            animation: matrix-spawn 1.5s ease-out forwards;
+        }
+
+        @keyframes matrix-spawn {
+            0% { 
+                opacity: 0;
+                transform: translateY(-10px) scale(0.5);
+            }
+            20% { 
+                opacity: 0.8;
+                transform: translateY(0) scale(1);
+            }
+            80% {
+                opacity: 0.6;
+                transform: translateY(5px) scale(1);
+            }
+            100% { 
+                opacity: 0;
+                transform: translateY(15px) scale(0.8);
+            }
+        }
+
+        /* Circuit trace beneath text */
+        .circuit-trace {
+            position: absolute;
+            bottom: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            height: 2px;
+            background: linear-gradient(90deg, 
+                transparent 0%,
+                var(--cyan) 20%,
+                var(--cyan) 80%,
+                transparent 100%
+            );
+            opacity: 0.4;
+        }
+
+        .circuit-trace::before,
+        .circuit-trace::after {
+            content: '';
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            background: var(--black);
+            border: 1px solid var(--cyan);
+            top: 50%;
+            transform: translateY(-50%) rotate(45deg);
+        }
+
+        .circuit-trace::before { left: 15%; }
+        .circuit-trace::after { right: 15%; }
+
+        .tagline {
+            font-size: 0.9rem;
+            letter-spacing: 0.5em;
+            color: var(--cyan);
+            margin-top: 15px;
+            text-transform: uppercase;
+        }
+
+        /* Navigation dots */
+        nav {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            padding: 30px;
+            position: relative;
+            z-index: 1;
+            background: var(--black);
+        }
+
+        nav a {
+            color: var(--white);
+            text-decoration: none;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.8rem;
+            letter-spacing: 0.2em;
+            padding: 10px 20px;
+            border: 1px solid var(--black-lighter);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        nav a::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, var(--cyan-glow), transparent);
+            transition: left 0.5s ease;
+        }
+
+        nav a:hover::before {
+            left: 100%;
+        }
+
+        nav a:hover {
+            border-color: var(--cyan);
+            color: var(--cyan);
+            box-shadow: 0 0 20px var(--cyan-glow);
+        }
+
+        /* Main content */
+        main {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Section styling */
+        section {
+            margin-bottom: 80px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .section-header::before {
+            content: '';
+            flex: 0 0 30px;
+            height: 2px;
+            background: linear-gradient(90deg, var(--cyan), transparent);
+        }
+
+        .section-header::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(90deg, var(--black-lighter), transparent);
+        }
+
+        h2 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: 0.3em;
+            color: var(--cyan);
+            text-transform: uppercase;
+        }
+
+        /* Game card */
+        .game-card {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            background: var(--black-light);
+            border: 1px solid var(--black-lighter);
+            padding: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .game-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, var(--cyan), transparent);
+        }
+
+        .game-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 2px;
+            height: 100%;
+            background: linear-gradient(180deg, var(--cyan), transparent);
+        }
+
+        .game-info h3 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2rem;
+            color: var(--white);
+            margin-bottom: 10px;
+            letter-spacing: 0.1em;
+        }
+
+        .game-status {
+            display: inline-block;
+            background: var(--black);
+            color: var(--cyan);
+            padding: 5px 15px;
+            font-size: 0.7rem;
+            letter-spacing: 0.2em;
+            border: 1px solid var(--cyan);
+            margin-bottom: 20px;
+        }
+
+        .game-description {
+            color: var(--white);
+            line-height: 1.8;
+            margin-bottom: 20px;
+            opacity: 0.8;
+        }
+
+        .game-features {
+            list-style: none;
+            margin-bottom: 30px;
+        }
+
+        .game-features li {
+            padding: 8px 0;
+            padding-left: 25px;
+            position: relative;
+            color: var(--white);
+            opacity: 0.7;
+        }
+
+        .game-features li::before {
+            content: '▹';
+            position: absolute;
+            left: 0;
+            color: var(--cyan);
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 15px 40px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.8rem;
+            letter-spacing: 0.2em;
+            text-decoration: none;
+            color: var(--black);
+            background: var(--cyan);
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: var(--white);
+            transform: translate(-50%, -50%);
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover::before {
+            width: 100%;
+            height: 100%;
+        }
+
+        .btn span {
+            position: relative;
+            z-index: 1;
+        }
+
+        .btn:hover {
+            box-shadow: 0 0 30px var(--cyan-glow);
+        }
+
+        .game-visual {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .game-visual iframe {
+            border: 1px solid var(--black-lighter);
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.1);
+        }
+
+        /* Album section */
+        .album-card {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 40px;
+            background: var(--black-light);
+            border: 1px solid var(--black-lighter);
+            padding: 30px;
+            position: relative;
+            margin-bottom: 40px;
+        }
+
+        .album-card::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--cyan));
+        }
+
+        .album-art-container {
+            position: relative;
+        }
+
+        .album-art {
+            width: 100%;
+            aspect-ratio: 1;
+            object-fit: cover;
+            filter: grayscale(20%);
+            transition: all 0.5s ease;
+        }
+
+        .album-art:hover {
+            filter: grayscale(0%);
+            box-shadow: 0 0 40px var(--cyan-glow);
+        }
+
+        .album-art-frame {
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            right: -10px;
+            bottom: -10px;
+            border: 1px solid var(--cyan);
+            opacity: 0.3;
+            pointer-events: none;
+        }
+
+        .album-info h3 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.8rem;
+            color: var(--white);
+            margin-bottom: 5px;
+            letter-spacing: 0.1em;
+        }
+
+        .album-info .artist {
+            color: var(--cyan);
+            font-size: 0.9rem;
+            letter-spacing: 0.2em;
+            margin-bottom: 10px;
+        }
+
+        .album-info .album-details {
+            color: var(--white);
+            opacity: 0.6;
+            font-size: 0.8rem;
+            margin-bottom: 20px;
+        }
+
+        .album-description {
+            margin-bottom: 25px;
+            padding: 20px;
+            background: var(--black);
+            border-left: 2px solid var(--cyan);
+        }
+
+        .album-description p {
+            color: var(--white);
+            opacity: 0.8;
+            line-height: 1.8;
+            font-size: 0.85rem;
+        }
+
+        .album-description-secondary {
+            margin-top: 15px;
+            opacity: 0.6 !important;
+            font-size: 0.8rem !important;
+        }
+
+        .album-description .highlight {
+            color: var(--cyan);
+            font-weight: bold;
+            letter-spacing: 0.1em;
+        }
+
+        .streaming-links {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .streaming-link {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: var(--black);
+            border: 1px solid var(--black-lighter);
+            color: var(--white);
+            text-decoration: none;
+            font-size: 0.75rem;
+            letter-spacing: 0.1em;
+            transition: all 0.3s ease;
+        }
+
+        .streaming-link:hover {
+            border-color: var(--cyan);
+            color: var(--cyan);
+        }
+
+        .streaming-link svg {
+            width: 16px;
+            height: 16px;
+            fill: currentColor;
+        }
+
+        .spotify-embed {
+            width: 100%;
+            border-radius: 0;
+            margin-top: 20px;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 40px 20px;
+            border-top: 1px solid var(--black-lighter);
+            position: relative;
+            z-index: 1;
+            background: var(--black);
+        }
+
+        footer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 1px;
+            background: var(--cyan);
+        }
+
+        .footer-logo {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.8rem;
+            letter-spacing: 0.3em;
+            color: var(--cyan);
+            margin-bottom: 10px;
+        }
+
+        .copyright {
+            font-size: 0.7rem;
+            color: var(--white);
+            opacity: 0.4;
+            letter-spacing: 0.1em;
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .game-card {
+                grid-template-columns: 1fr;
+            }
+
+            .album-card {
+                grid-template-columns: 1fr;
+            }
+
+            .album-art-container {
+                max-width: 300px;
+                margin: 0 auto;
+            }
+
+            nav {
+                flex-wrap: wrap;
+            }
+        }
+
+        /* Biomechanical data conduits */
+        .data-stream {
+            position: fixed;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.5rem;
+            color: var(--cyan);
+            opacity: 0.08;
+            writing-mode: vertical-rl;
+            letter-spacing: 0.5em;
+            pointer-events: none;
+            z-index: -1;
+            font-family: 'Share Tech Mono', monospace;
+            animation: data-pulse 4s ease-in-out infinite;
+        }
+
+        .data-stream-left {
+            left: 20px;
+            right: auto;
+            animation-delay: 2s;
+        }
+
+        @keyframes data-pulse {
+            0%, 100% { opacity: 0.05; letter-spacing: 0.5em; }
+            50% { opacity: 0.12; letter-spacing: 0.6em; }
+        }
+
+        /* Harsh abstract glow masses */
+        .orb {
+            position: fixed;
+            width: 400px;
+            height: 200px;
+            background: radial-gradient(ellipse, var(--cyan-glow) 0%, transparent 60%);
+            opacity: 0.06;
+            pointer-events: none;
+            z-index: -1;
+            filter: blur(40px);
+            animation: orb-float 12s ease-in-out infinite;
+        }
+
+        .orb-1 {
+            top: 5%;
+            right: -150px;
+            transform: rotate(-20deg);
+            animation-delay: 0s;
+        }
+
+        .orb-2 {
+            bottom: 15%;
+            left: -150px;
+            transform: rotate(15deg);
+            animation-delay: 6s;
+        }
+
+        @keyframes orb-float {
+            0%, 100% { 
+                opacity: 0.04;
+                transform: rotate(-20deg) translate(0, 0);
+            }
+            50% { 
+                opacity: 0.08;
+                transform: rotate(-15deg) translate(20px, 30px);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Biomechanical background elements -->
+    <div class="grid-bg"></div>
+    <div class="noise-overlay"></div>
+    <div class="membrane"></div>
+    <div class="mesh-distort"></div>
+    
+    <!-- Spine/rib structure left -->
+    <div class="bio-structure spine-left">
+        <div class="rib"></div>
+        <div class="rib"></div>
+        <div class="rib"></div>
+        <div class="rib"></div>
+        <div class="rib"></div>
+        <div class="rib"></div>
+        <div class="rib"></div>
+        <div class="rib"></div>
+        <div class="rib"></div>
+        <div class="rib"></div>
+        <div class="rib"></div>
+        <div class="rib"></div>
+        <div class="rib"></div>
+    </div>
+
+    <!-- Tendril tubes right -->
+    <div class="bio-structure tendril-cluster">
+        <div class="tendril"></div>
+        <div class="tendril"></div>
+        <div class="tendril"></div>
+        <div class="tendril"></div>
+    </div>
+
+    <!-- Vertebrae column -->
+    <div class="vertebrae">
+        <div class="vertebra"></div>
+        <div class="vertebra"></div>
+        <div class="vertebra"></div>
+        <div class="vertebra"></div>
+        <div class="vertebra"></div>
+        <div class="vertebra"></div>
+        <div class="vertebra"></div>
+        <div class="vertebra"></div>
+        <div class="vertebra"></div>
+        <div class="vertebra"></div>
+    </div>
+
+    <!-- Harsh angular cuts -->
+    <div class="harsh-cut"></div>
+    <div class="harsh-cut"></div>
+    <div class="harsh-cut"></div>
+    <div class="harsh-cut"></div>
+    <div class="harsh-cut"></div>
+
+    <!-- Organic pulsing nodes -->
+    <div class="organic-node"></div>
+    <div class="organic-node"></div>
+    <div class="organic-node"></div>
+    <div class="organic-node"></div>
+    <div class="organic-node"></div>
+
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="data-stream">◈─┼─◈─┼─◈─┼─◈─┼─◈─┼─◈</div>
+    <div class="data-stream data-stream-left">┼─◈─┼─◈─┼─◈─┼─◈─┼─◈─┼</div>
+
+    <header>
+        <div class="logo-container">
+            <!-- Neural connection web -->
+            <div class="neural-web">
+                <svg viewBox="0 0 400 150" preserveAspectRatio="none">
+                    <path id="neural-1" class="neural-line" d="M20,30 Q100,80 200,40 T380,60" />
+                    <path id="neural-2" class="neural-line" d="M30,100 Q150,50 250,90 T390,70" />
+                    <path id="neural-3" class="neural-line" d="M10,60 Q80,120 180,70 T370,110" />
+                    <path id="neural-4" class="neural-line" d="M50,20 Q180,100 280,30 T400,50" />
+                    <path id="neural-5" class="neural-line" d="M0,80 Q120,30 220,100 T380,40" />
+                </svg>
+            </div>
+            
+            <h1>ELIAS AUSTIN GAMES</h1>
+            
+            <div class="circuit-trace"></div>
+        </div>
+        <p class="tagline">Interactive Software • Audio Synthesis • Computational Art</p>
+    </header>
+
+    <nav>
+        <a href="#games">GAMES</a>
+        <a href="#music">MUSIC</a>
+        <a href="#about">ABOUT</a>
+    </nav>
+
+    <main>
+        <!-- Games Section -->
+        <section id="games">
+            <div class="section-header">
+                <h2>Games</h2>
+            </div>
+
+            <div class="game-card">
+                <div class="game-info">
+                    <h3>BINGO BETTY</h3>
+                    <span class="game-status">IN DEVELOPMENT • 2026</span>
+                    <p class="game-description">
+                        A Bingo roguelite themed around desperate seniors gambling away their last fixed income on one last shot of glory.
+                    </p>
+                    <ul class="game-features">
+                        <li>Create crazy chains through blotters</li>
+                        <li>Customize your cards every run</li>
+                        <li>Roguelite progression systems</li>
+                        <li>Unique bingo mechanics</li>
+                    </ul>
+                    <a href="https://playbingobetty.com" target="_blank" class="btn">
+                        <span>VISIT SITE</span>
+                    </a>
+                </div>
+                <div class="game-visual">
+                    <iframe src="https://store.steampowered.com/widget/4045170/" frameborder="0" width="646" height="190" title="Bingo Betty on Steam" style="max-width: 100%;"></iframe>
+                </div>
+            </div>
+        </section>
+
+        <!-- Music Section -->
+        <section id="music">
+            <div class="section-header">
+                <h2>Audio Output</h2>
+            </div>
+
+            <!-- Album: CTRL THOUGHT DELETE -->
+            <div class="album-card">
+                <div class="album-art-container">
+                    <img src="https://i.scdn.co/image/ab67616d0000b27354c6d92d7b56628cfd330fc9" alt="CTRL THOUGHT DELETE Album Art" class="album-art">
+                    <div class="album-art-frame"></div>
+                </div>
+                <div class="album-info">
+                    <h3>CTRL THOUGHT DELETE</h3>
+                    <p class="artist">ELIAS AUSTIN</p>
+                    <p class="album-details">2024 • 11 TRACKS • 49:32</p>
+                    
+                    <div class="album-description">
+                        <p>DATA_RECOVERY_LOG: This album represents salvaged audio fragments extracted from a corrupted storage device presumed permanently lost. These compositions existed only in degraded memory sectors—tracks lost to time, now reconstructed and released as archival output.</p>
+                        <p class="album-description-secondary">The more refined compositions contained herein serve as prototype audio assets for <span class="highlight">CRYSTAL SPIRE</span>—my designated magnum opus, a project running in background processes for 9+ years. World architecture, narrative threading, character synthesis, mechanical systems, environmental design—all components developed in isolation at deliberate pace. This project will never be rushed. It remains the eternal back-burner operation, the secret system process. Funding threshold achievement enabling full-time development allocation = primary long-term objective.</p>
+                    </div>
+                    
+                    <div class="streaming-links">
+                        <a href="https://open.spotify.com/album/7ooDH6N14tL5KAk6CvAm0n" target="_blank" class="streaming-link">
+                            <svg viewBox="0 0 24 24"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
+                            SPOTIFY
+                        </a>
+                        <a href="https://music.apple.com/album/ctrl-thought-delete" target="_blank" class="streaming-link">
+                            <svg viewBox="0 0 24 24"><path d="M23.994 6.124a9.23 9.23 0 00-.24-2.19c-.317-1.31-1.062-2.31-2.18-3.043a5.022 5.022 0 00-1.877-.726 10.496 10.496 0 00-1.564-.15c-.04-.003-.083-.01-.124-.013H5.986c-.152.01-.303.017-.455.026-.747.043-1.49.123-2.193.401-1.336.53-2.3 1.452-2.865 2.78-.192.448-.292.925-.363 1.408-.056.392-.088.785-.1 1.18 0 .032-.007.062-.01.093v12.223c.01.14.017.283.027.424.05.815.154 1.624.497 2.373.65 1.42 1.738 2.353 3.234 2.801.42.127.856.187 1.293.228.555.053 1.11.06 1.667.06h11.03c.525 0 1.048-.034 1.57-.1.823-.106 1.597-.35 2.296-.81a5.046 5.046 0 001.88-2.207c.186-.42.293-.87.37-1.324.113-.675.138-1.358.137-2.04-.002-3.8 0-7.595-.003-11.393zm-6.423 3.99v5.712c0 .417-.058.827-.244 1.206-.29.59-.76.962-1.388 1.14-.35.1-.706.157-1.07.173-.95.042-1.785-.383-2.188-1.228-.292-.612-.287-1.25-.033-1.867.297-.724.892-1.135 1.637-1.343.47-.13.95-.21 1.432-.27.256-.034.51-.082.762-.134.166-.035.27-.133.3-.3a.54.54 0 00.013-.12V9.063c0-.085-.02-.16-.106-.196a.32.32 0 00-.162-.028c-.346.053-.693.1-1.04.152-1.022.15-2.045.302-3.067.454-.51.076-1.018.152-1.528.23-.05.008-.1.02-.147.036-.1.036-.138.1-.138.204.003.097 0 .195 0 .293v6.876c0 .383-.05.76-.217 1.112-.29.615-.776 1.007-1.428 1.193-.34.097-.687.15-1.04.17-.982.05-1.843-.36-2.27-1.254-.292-.612-.287-1.25-.033-1.867.298-.725.893-1.137 1.64-1.345.467-.13.943-.21 1.427-.267.265-.033.53-.08.79-.13.163-.032.266-.13.293-.295.013-.066.017-.134.017-.2V5.89c0-.16.048-.273.198-.334.03-.012.063-.02.095-.026.16-.022.32-.04.48-.06l2.04-.3c.696-.1 1.39-.203 2.087-.302.536-.077 1.073-.152 1.61-.232.32-.048.64-.098.96-.137.082-.01.17-.007.25.003.115.016.18.09.19.205.007.078.012.156.012.235v4.673z"/></svg>
+                            APPLE MUSIC
+                        </a>
+                        <a href="https://music.youtube.com/playlist?list=OLAK5uy_nGXxJNNJc0dZp8Yvx7NBQTcQD9WZGGWQc" target="_blank" class="streaming-link">
+                            <svg viewBox="0 0 24 24"><path d="M12 0C5.376 0 0 5.376 0 12s5.376 12 12 12 12-5.376 12-12S18.624 0 12 0zm0 19.104c-3.924 0-7.104-3.18-7.104-7.104S8.076 4.896 12 4.896s7.104 3.18 7.104 7.104-3.18 7.104-7.104 7.104zm0-13.332c-3.432 0-6.228 2.796-6.228 6.228S8.568 18.228 12 18.228s6.228-2.796 6.228-6.228S15.432 5.772 12 5.772zM9.684 15.54V8.46L15.816 12l-6.132 3.54z"/></svg>
+                            YOUTUBE MUSIC
+                        </a>
+                    </div>
+
+                    <iframe 
+                        class="spotify-embed"
+                        src="https://open.spotify.com/embed/album/7ooDH6N14tL5KAk6CvAm0n?utm_source=generator&theme=0" 
+                        width="100%" 
+                        height="352" 
+                        frameBorder="0" 
+                        allowfullscreen="" 
+                        allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
+                        loading="lazy">
+                    </iframe>
+                </div>
+            </div>
+        </section>
+
+        <!-- About Section -->
+        <section id="about">
+            <div class="section-header">
+                <h2>About</h2>
+            </div>
+            <div class="game-card" style="display: block;">
+                <p class="game-description" style="max-width: 800px;">
+                    ELIAS_AUSTIN_GAMES.exe — A single-operator development node specializing in the synthesis of interactive entertainment software and electronic audio compositions. I architect systems that merge nostalgic pattern recognition with experimental mechanical design. Each project represents a discrete computational exploration: games engineered to subvert expectations, music processed through algorithmic emotion matrices. This hub serves as the central interface for all output streams.
+                </p>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="footer-logo">ELIAS AUSTIN GAMES</div>
+        <p class="copyright">© 2024 ELIAS AUSTIN GAMES. ALL RIGHTS RESERVED.</p>
+    </footer>
+
+    <script>
+        // Matrix character set
+        const matrixChars = '01アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン@#$%&*!?<>[]{}=/\\|~^ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        
+        function randomChar() {
+            return matrixChars[Math.floor(Math.random() * matrixChars.length)];
+        }
+        
+        function spawnMatrixChar() {
+            const char = document.createElement('span');
+            char.className = 'matrix-char';
+            char.textContent = randomChar();
+            
+            // Random position across the entire page
+            char.style.left = Math.random() * 100 + 'vw';
+            char.style.top = Math.random() * 100 + 'vh';
+            
+            // Slight size variation
+            char.style.fontSize = (10 + Math.random() * 8) + 'px';
+            
+            document.body.appendChild(char);
+            
+            // Cycle the character while it's alive
+            const cycleInterval = setInterval(() => {
+                char.textContent = randomChar();
+            }, 80);
+            
+            // Remove after animation completes
+            setTimeout(() => {
+                clearInterval(cycleInterval);
+                char.remove();
+            }, 1500);
+        }
+        
+        // Spawn characters at random intervals
+        function scheduleNextSpawn() {
+            const delay = 100 + Math.random() * 200; // 100-300ms between spawns
+            setTimeout(() => {
+                spawnMatrixChar();
+                scheduleNextSpawn();
+            }, delay);
+        }
+        
+        // Start spawning
+        scheduleNextSpawn();
+        
+        // Spawn a few immediately for initial effect
+        for (let i = 0; i < 8; i++) {
+            setTimeout(() => spawnMatrixChar(), i * 100);
+        }
+
+        // Neural path animation
+        const neuralPaths = [
+            { id: 'neural-1', baseY1: 30, baseY2: 40, baseY3: 60 },
+            { id: 'neural-2', baseY1: 100, baseY2: 90, baseY3: 70 },
+            { id: 'neural-3', baseY1: 60, baseY2: 70, baseY3: 110 },
+            { id: 'neural-4', baseY1: 20, baseY2: 30, baseY3: 50 },
+            { id: 'neural-5', baseY1: 80, baseY2: 100, baseY3: 40 }
+        ];
+
+        function animateNeuralPaths() {
+            neuralPaths.forEach((pathData, index) => {
+                const path = document.getElementById(pathData.id);
+                if (!path) return;
+
+                const time = Date.now() / 1000;
+                const offset = index * 0.5;
+                
+                // Create organic wave motion
+                const y1 = pathData.baseY1 + Math.sin(time + offset) * 20;
+                const y2 = pathData.baseY2 + Math.cos(time * 0.8 + offset) * 25;
+                const y3 = pathData.baseY3 + Math.sin(time * 1.2 + offset) * 15;
+                
+                const x1 = 100 + Math.cos(time * 0.5 + offset) * 30;
+                const x2 = 200 + Math.sin(time * 0.7 + offset) * 20;
+                
+                path.setAttribute('d', `M${10 + index * 10},${y1} Q${x1},${y1 + 30} ${x2},${y2} T${380 - index * 5},${y3}`);
+            });
+            
+            requestAnimationFrame(animateNeuralPaths);
+        }
+        
+        animateNeuralPaths();
+
+        // Subtle membrane shift on mouse move
+        document.addEventListener('mousemove', (e) => {
+            const x = e.clientX / window.innerWidth;
+            const y = e.clientY / window.innerHeight;
+
+            const membrane = document.querySelector('.membrane');
+            if (membrane) {
+                membrane.style.transform = `translate(${(x - 0.5) * 10}px, ${(y - 0.5) * 10}px)`;
+            }
+        });
+
+        // Smooth scroll
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+    </script>
+</body>
+</html>
